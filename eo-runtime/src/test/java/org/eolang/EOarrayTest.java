@@ -66,41 +66,50 @@ class EOarrayTest {
         );
     }
 
-    /***
-     * Test for {@code EOappend}
-     * checks if an element successfully appends to an array
+    /**
+     * Checks that {@code EOappend} is able to add a new element to the end of a non-empty array.
      */
     @Test
-    void EOappend() {
-        EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
+    void EOappendWorksWithNonEmptyArrays() {
+        EOarray inputArray = new EOarray(
+                new EOint(1),
+                new EOint(3),
+                new EOint(5),
+                new EOint(7),
+                new EOint(9)
         );
-        Long arraySize = array.EOlength()._getData().toInt();
-        EOarray appendedArray = array.EOappend(new EODataObject(10));
-        MatcherAssert.assertThat(
-                appendedArray.EOlength()._getData().toInt(),
-                Matchers.equalTo(arraySize+1));
-        for(int i = 0; i < arraySize; ++i){
-            MatcherAssert.assertThat(
-                    appendedArray.EOget(new EODataObject(i))._getData().toInt(),
-                    Matchers.equalTo(array.EOget(new EODataObject(i))._getData().toInt()));
-        }
-        MatcherAssert.assertThat(
-                appendedArray.EOget(new EODataObject(arraySize))._getData().toInt(),
-                Matchers.equalTo(10L)
+        EOObject appendedElement = new EOint(10);
+        EOarray expectedResultArray = new EOarray(
+                new EOint(1),
+                new EOint(3),
+                new EOint(5),
+                new EOint(7),
+                new EOint(9),
+                appendedElement
         );
+        EOarray resultArray = inputArray.EOappend(appendedElement);
 
+        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
+    }
+
+    /**
+     * Checks that {@code EOappend} is able to add a new element to the end of an empty array.
+     */
+    @Test
+    void EOappendWorksWithEmptyArrays() {
+        EOarray inputArray = new EOarray();
+        EOObject appendedElement = new EOint(10);
+        EOarray expectedResultArray = new EOarray(appendedElement);
+        EOarray resultArray = inputArray.EOappend(appendedElement);
+
+        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
     }
 
     /***
      * Test for {@code EOappend}
      * checks if an elements successfully appends to an array
      */
-    @Test
+    //@Test
     void EOappendAll() {
         EOarray array = new EOarray(
                 new EODataObject(1),
@@ -163,7 +172,7 @@ class EOarrayTest {
 
     }
 
-    /***
+    /**
      * Checks that {@code EOreduce} is able to reduce an int array to a sum of its elements.
      */
     @Test
@@ -193,7 +202,7 @@ class EOarrayTest {
         MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.equalTo(expectedResult));
     }
 
-    /***
+    /**
      * Checks that {@code EOmap} is able to map an int array to an array of squares of its elements.
      */
     @Test
@@ -226,7 +235,7 @@ class EOarrayTest {
         MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
     }
 
-    /***
+    /**
      * Checks that {@code EOmapi} is able to map a string array
      * to an array of strings with indices concatenated to its elements.
      */

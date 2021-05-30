@@ -80,8 +80,6 @@ public class EOarray extends EOObject {
      * @return a copy of this array with {@code obj} appended as its last element.
      */
     public EOarray EOappend(EOObject obj) {
-        /*List<EOObject> newList = new java.util.ArrayList<>(_array);
-        newList.add(obj);*/
         EOObject[] newArray = new EOObject[_array.size() + 1];
         System.arraycopy(_array.toArray(), 0, newArray, 0, _array.size());
         newArray[_array.size()] = obj;
