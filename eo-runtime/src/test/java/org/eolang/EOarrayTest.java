@@ -1,7 +1,6 @@
 package org.eolang;
 
 import org.eolang.core.EOObject;
-import org.eolang.core.data.EODataObject;
 import org.eolang.io.EOstdout;
 import org.eolang.txt.EOsprintf;
 import org.hamcrest.MatcherAssert;
@@ -199,15 +198,15 @@ class EOarrayTest {
     @Test
     void EOget() {
         EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
+                new EOint(1),
+                new EOint(3),
+                new EOint(5),
+                new EOint(7),
+                new EOint(9)
         );
         MatcherAssert.assertThat(
                 array.EOget(
-                        new EODataObject(2))._getData().toInt(),
+                        new EOint(2))._getData().toInt(),
                 Matchers.equalTo(5L)
         );
     }
@@ -216,37 +215,37 @@ class EOarrayTest {
      * Test for {@code EOappend}
      * checks if an elements successfully appends to an array
      */
-    //@Test
+    @Test
     void EOappendAll() {
         EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
+                new EOint(1),
+                new EOint(3),
+                new EOint(5),
+                new EOint(7),
+                new EOint(9)
         );
         Long arraySize = array.EOlength()._getData().toInt();
         EOarray array2 = new EOarray(
-                new EODataObject(2),
-                new EODataObject(4),
-                new EODataObject(6),
-                new EODataObject(8),
-                new EODataObject(10),
-                new EODataObject(12)
+                new EOint(2),
+                new EOint(4),
+                new EOint(6),
+                new EOint(8),
+                new EOint(10),
+                new EOint(12)
         );
         Long array2Size = array2.EOlength()._getData().toInt();
         //Append not an EOarray
-        EOarray appendedArray1 = array.EOappendAll(new EODataObject(10));
+        EOarray appendedArray1 = array.EOappendAll(new EOint(10));
         MatcherAssert.assertThat(
                 appendedArray1.EOlength()._getData().toInt(),
                 Matchers.equalTo(arraySize+1));
         for(int i = 0; i < arraySize; ++i){
             MatcherAssert.assertThat(
-                    appendedArray1.EOget(new EODataObject(i))._getData().toInt(),
-                    Matchers.equalTo(array.EOget(new EODataObject(i))._getData().toInt()));
+                    appendedArray1.EOget(new EOint(i))._getData().toInt(),
+                    Matchers.equalTo(array.EOget(new EOint(i))._getData().toInt()));
         }
         MatcherAssert.assertThat(
-                appendedArray1.EOget(new EODataObject(arraySize))._getData().toInt(),
+                appendedArray1.EOget(new EOint(arraySize))._getData().toInt(),
                 Matchers.equalTo(10L)
         );
 
@@ -257,8 +256,8 @@ class EOarrayTest {
                 Matchers.equalTo(arraySize));
         for(int i = 0; i < arraySize; ++i){
             MatcherAssert.assertThat(
-                    appendedArray2.EOget(new EODataObject(i))._getData().toInt(),
-                    Matchers.equalTo(array.EOget(new EODataObject(i))._getData().toInt()));
+                    appendedArray2.EOget(new EOint(i))._getData().toInt(),
+                    Matchers.equalTo(array.EOget(new EOint(i))._getData().toInt()));
         }
 
         //Append an not empty EOarray
@@ -268,13 +267,13 @@ class EOarrayTest {
                 Matchers.equalTo(arraySize+array2Size));
         for(Long i = 0L; i < arraySize; ++i){
             MatcherAssert.assertThat(
-                    appendedArray3.EOget(new EODataObject(i))._getData().toInt(),
-                    Matchers.equalTo(array.EOget(new EODataObject(i))._getData().toInt()));
+                    appendedArray3.EOget(new EOint(i))._getData().toInt(),
+                    Matchers.equalTo(array.EOget(new EOint(i))._getData().toInt()));
         }
         for(Long i = arraySize; i < arraySize+array2Size; ++i){
             MatcherAssert.assertThat(
-                    appendedArray3.EOget(new EODataObject(i))._getData().toInt(),
-                    Matchers.equalTo(array2.EOget(new EODataObject(i - arraySize))._getData().toInt()));
+                    appendedArray3.EOget(new EOint(i))._getData().toInt(),
+                    Matchers.equalTo(array2.EOget(new EOint(i - arraySize))._getData().toInt()));
         }
 
     }
