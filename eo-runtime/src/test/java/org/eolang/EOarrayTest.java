@@ -2,10 +2,14 @@ package org.eolang;
 
 import org.eolang.core.EOObject;
 import org.eolang.core.data.EODataObject;
+import org.eolang.io.EOstdout;
 import org.eolang.txt.EOsprintf;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 /**
  * Test cases for {@link EOarray}.
@@ -49,6 +53,89 @@ class EOarrayTest {
         EOarray resultArray = inputArray.EOappend(appendedElement);
 
         MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
+    }
+
+    /**
+     * Checks that {@code EOeach} is able to dataize elements of a non-empty array.
+     * To do this, the test performs {@code EOeach} on an array of strings trying to print its elements,
+     * and catches the stdout stream.
+     */
+    @Test
+    void EOeachDataizesElementsOfNonEmptyArray() {
+        PrintStream systemStdout = System.out;
+        try {
+            EOarray inputArray = new EOarray(
+                    new EOstring("this "),
+                    new EOstring("is "),
+                    new EOstring("text "),
+                    new EOstring("to be printed!")
+            );
+            String expectedStdout = "this is text to be printed!";
+            EOObject evaluatorObject = new EOObject() {
+                public EOObject EOeach(EOObject element) {
+                    return new EOObject() {
+                        @Override
+                        protected EOObject _decoratee() {
+                            // prints the current element
+                            return new EOstdout(element);
+                        }
+                    };
+                }
+            };
+            // mocking the stdout stream
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            StdoutMockingUtils.mockSystemOut(stdout);
+            // performing the each operation on all the elements of the array
+            EOObject returnedValue = inputArray.EOeach(evaluatorObject);
+
+            // EOeach should have dataized the elements, thus the stdout must have been changed
+            MatcherAssert.assertThat(stdout.toString(), Matchers.is(expectedStdout));
+            // EOeach always returns true
+            MatcherAssert.assertThat(returnedValue._getData().toBoolean(), Matchers.is(true));
+        }
+        finally {
+            // rollback the stdout to the original system stream
+            StdoutMockingUtils.rollbackChangesToStdout(systemStdout);
+        }
+    }
+
+    /**
+     * Checks that {@code EOeach} does not dataize anything when working with empty arrays.
+     * To do this, the test performs {@code EOeach} on an empty array trying to print its elements,
+     * and catches the stdout stream.
+     */
+    @Test
+    void EOeachDoesNotDataizeElementsOfEmptyArray() {
+        PrintStream systemStdout = System.out;
+        try {
+            EOarray inputArray = new EOarray();
+            String expectedStdout = "";
+            EOObject evaluatorObject = new EOObject() {
+                public EOObject EOeach(EOObject element) {
+                    return new EOObject() {
+                        @Override
+                        protected EOObject _decoratee() {
+                            // prints the current element
+                            return new EOstdout(element);
+                        }
+                    };
+                }
+            };
+            // mocking the stdout stream
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            StdoutMockingUtils.mockSystemOut(stdout);
+            // performing the each operation on all the elements of the array
+            EOObject returnedValue = inputArray.EOeach(evaluatorObject);
+
+            // EOeach should not have dataized the elements, thus the stdout must not have been changed
+            MatcherAssert.assertThat(stdout.toString(), Matchers.is(expectedStdout));
+            // EOeach always returns true
+            MatcherAssert.assertThat(returnedValue._getData().toBoolean(), Matchers.is(true));
+        }
+        finally {
+            // rollback the stdout to the original system stream
+            StdoutMockingUtils.rollbackChangesToStdout(systemStdout);
+        }
     }
 
     /**
@@ -424,4 +511,14 @@ class EOarrayTest {
         MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.is(expectedResult));
     }
 
+}
+
+class StdoutMockingUtils {
+    public static void mockSystemOut(ByteArrayOutputStream newOut) {
+        System.setOut(new PrintStream(newOut));
+    }
+
+    public static void rollbackChangesToStdout(PrintStream oldOut) {
+        System.setOut(oldOut);
+    }
 }

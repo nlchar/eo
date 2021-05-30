@@ -218,9 +218,7 @@ public class EOarray extends EOObject {
      */
     public EObool EOeach(EOObject evaluatorObject) {
         for (EOObject current : _array) {
-            evaluatorObject
-                    ._getAttribute("EOeach", current)
-                    ._getData();
+            evaluatorObject._getAttribute("EOeach", current)._getData();
         }
         return new EObool(true);
     }
@@ -231,7 +229,7 @@ public class EOarray extends EOObject {
      * Uniqueness of elements within pairs is not guaranteed (this method, however, guarantees that resulting pairs
      * themselves are unique regarding positions of included elements), so users of this method should consider
      * eliminating duplicates before retrieving pairs if unique elements within pairs are required (see examples below).
-     * <p>
+     *
      * Example #1:
      * array([1, 2, 3]).pairs -> array([tuple(1, 2), tuple(1, 3), tuple(2, 3)])
      * Example #2:
