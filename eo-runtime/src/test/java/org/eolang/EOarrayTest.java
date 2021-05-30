@@ -13,60 +13,16 @@ import org.junit.jupiter.api.Test;
 class EOarrayTest {
 
     /**
-     * Checks that {@code EOisEmpty} is able to assess that an empty array is empty.
+     * Checks that {@code EOappend} is able to add a new element to the end of an empty array.
      */
     @Test
-    void EOisEmptyForEmptyArrays() {
-        EOarray array = new EOarray();
-        MatcherAssert.assertThat(array.EOisEmpty()._getData().toBoolean(), Matchers.is(true));
-    }
+    void EOappendWorksWithEmptyArrays() {
+        EOarray inputArray = new EOarray();
+        EOObject appendedElement = new EOint(10);
+        EOarray expectedResultArray = new EOarray(appendedElement);
+        EOarray resultArray = inputArray.EOappend(appendedElement);
 
-    /**
-     * Checks that {@code EOisEmpty} is able to assess that a non-empty array is not empty.
-     */
-    @Test
-    void EOisEmptyForNonEmptyArrays() {
-        EOarray array = new EOarray(new EOint(1));
-        MatcherAssert.assertThat(array.EOisEmpty()._getData().toBoolean(), Matchers.is(false));
-    }
-
-    /***
-     * Test for {@code EOlength}
-     * checks if the length of the array is returned
-     */
-    @Test
-    void EOlength() {
-        EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
-        );
-        MatcherAssert.assertThat(
-                array.EOlength()._getData().toInt(),
-                Matchers.equalTo(5L)
-        );
-    }
-
-    /***
-     * Test for {@code EOget}
-     * checks if the element at a specified position of the array is returned
-     */
-    @Test
-    void EOget() {
-        EOarray array = new EOarray(
-                new EODataObject(1),
-                new EODataObject(3),
-                new EODataObject(5),
-                new EODataObject(7),
-                new EODataObject(9)
-        );
-        MatcherAssert.assertThat(
-                array.EOget(
-                        new EODataObject(2))._getData().toInt(),
-                Matchers.equalTo(5L)
-        );
+        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
     }
 
     /**
@@ -96,16 +52,77 @@ class EOarrayTest {
     }
 
     /**
-     * Checks that {@code EOappend} is able to add a new element to the end of an empty array.
+     * Checks that {@code EOisEmpty} is able to assess that an empty array is empty.
      */
     @Test
-    void EOappendWorksWithEmptyArrays() {
-        EOarray inputArray = new EOarray();
-        EOObject appendedElement = new EOint(10);
-        EOarray expectedResultArray = new EOarray(appendedElement);
-        EOarray resultArray = inputArray.EOappend(appendedElement);
+    void EOisEmptyForEmptyArrays() {
+        EOarray array = new EOarray();
+        MatcherAssert.assertThat(array.EOisEmpty()._getData().toBoolean(), Matchers.is(true));
+    }
 
-        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
+    /**
+     * Checks that {@code EOisEmpty} is able to assess that a non-empty array is not empty.
+     */
+    @Test
+    void EOisEmptyForNonEmptyArrays() {
+        EOarray array = new EOarray(new EOint(1));
+        MatcherAssert.assertThat(array.EOisEmpty()._getData().toBoolean(), Matchers.is(false));
+    }
+
+    /**
+     * Checks that {@code EOlength} returns 0 for an empty array.
+     */
+    @Test
+    void EOlengthForEmptyArrays() {
+        EOarray array = new EOarray();
+        Long expectedResult = 0L;
+        MatcherAssert.assertThat(array.EOlength()._getData().toInt(), Matchers.is(expectedResult));
+    }
+
+    /**
+     * Checks that {@code EOlength} returns 1 for an array with one element.
+     */
+    @Test
+    void EOlengthForOneElementArrays() {
+        EOarray array = new EOarray(new EOstring("test"));
+        Long expectedResult = 1L;
+        MatcherAssert.assertThat(array.EOlength()._getData().toInt(), Matchers.is(expectedResult));
+    }
+
+    /**
+     * Checks that {@code EOlength} returns 5 for an array with five elements.
+     */
+    @Test
+    void EOlengthForFiveElementArrays() {
+        EOarray array = new EOarray(
+                new EOstring("test"),
+                new EOstring("test"),
+                new EOstring("test"),
+                new EOstring("test"),
+                new EOstring("another string")
+        );
+        Long expectedResult = 5L;
+        MatcherAssert.assertThat(array.EOlength()._getData().toInt(), Matchers.is(expectedResult));
+    }
+
+    /***
+     * Test for {@code EOget}
+     * checks if the element at a specified position of the array is returned
+     */
+    @Test
+    void EOget() {
+        EOarray array = new EOarray(
+                new EODataObject(1),
+                new EODataObject(3),
+                new EODataObject(5),
+                new EODataObject(7),
+                new EODataObject(9)
+        );
+        MatcherAssert.assertThat(
+                array.EOget(
+                        new EODataObject(2))._getData().toInt(),
+                Matchers.equalTo(5L)
+        );
     }
 
     /***
