@@ -227,6 +227,69 @@ class EOarrayTest {
     }
 
     /**
+     * Checks that {@code EOreducei} is able to evaluate a polynomial 5*x^4 - 7*x^2 + 20*x + 1, where x = 10.
+     * This problem is tested by reducing the array [1, 20, -7, 0, 5]
+     * representing the polynomial coefficients (from the lowest to the highest degree of x).
+     * Reduction considers the indices of the coefficients array [0, 1, 2, 3, 4],
+     * where each index represents a degree of the corresponding x.
+     * Reduction works as follows:
+     * 1. The initial value is 0.
+     * 2. For each element of the coefficients array,
+     *    multiply it to x raised into the power of the current index, where x = 10.
+     * Hence, the expected result is 49501.
+     */
+    @Test
+    void EOreduceiWorksWithNonEmptyIntArray() {
+        EOarray inputArray = new EOarray(
+                new EOint(1),
+                new EOint(20),
+                new EOint(-7),
+                new EOint(0),
+                new EOint(5)
+        );
+        Long expectedResult = 49501L;
+        EOint xValue = new EOint(10L);
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreducei(EOint subtotal, EOint element, EOint index) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        // + x*(a_i)^(c_i)
+                        return subtotal.EOadd(element.EOmul(xValue.EOpow(index)));
+                    }
+                };
+            }
+        };
+        EOint initialAccumulator = new EOint(0);
+        EOObject reducedValue = inputArray.EOreducei(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.equalTo(expectedResult));
+    }
+
+    /**
+     * Checks that {@code EOreducei} is able to work with empty arrays. The result must be equal to the initial value.
+     */
+    @Test
+    void EOreduceiWorksWithEmptyIntArray() {
+        EOarray inputArray = new EOarray();
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreducei(EOint subtotal, EOint element, EOint index) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        // adds the current element of the array and the current index to the subtotal
+                        return subtotal.EOadd(element).EOadd(index);
+                    }
+                };
+            }
+        };
+        EOint initialAccumulator = new EOint(177);
+        EOObject reducedValue = inputArray.EOreducei(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue, Matchers.equalTo(initialAccumulator));
+    }
+
+    /**
      * Checks that {@code EOmap} is able to map a non-empty int array to an array of squares of its elements.
      */
     @Test

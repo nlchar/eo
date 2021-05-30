@@ -1,12 +1,12 @@
 package org.eolang;
 
 import org.eolang.core.EOObject;
-import org.eolang.core.data.EODataObject;
 import org.paukov.combinatorics3.Generator;
+
 import java.util.List;
 import java.util.Objects;
 
-/***
+/**
  * Represents an array data structure.
  */
 public class EOarray extends EOObject {
@@ -27,6 +27,7 @@ public class EOarray extends EOObject {
 
     /**
      * Instantiates a non-empty array.
+     *
      * @param objects contents of the array being instantiated.
      */
     public EOarray(EOObject... objects) {
@@ -35,6 +36,7 @@ public class EOarray extends EOObject {
 
     /**
      * Determines if this array is empty.
+     *
      * @return {@code true} if this array is empty, otherwise {@code false}.
      */
     public EObool EOisEmpty() {
@@ -43,6 +45,7 @@ public class EOarray extends EOObject {
 
     /**
      * Retrieves the length of this array.
+     *
      * @return an {@code int} representing the length of this array.
      */
     public EOint EOlength() {
@@ -61,11 +64,11 @@ public class EOarray extends EOObject {
         int position = i._getData().toInt().intValue();
         if (position >= _array.size() || position < 0) {
             throw new IndexOutOfBoundsException(
-                String.format(
-                    "Cannot retrieve the element at the position %d of the following array: %s. The index is out of bounds.",
-                    position,
-                    this
-                )
+                    String.format(
+                            "Cannot retrieve the element at the position %d of the following array: %s. The index is out of bounds.",
+                            position,
+                            this
+                    )
             );
         }
         return _array.get(position);
@@ -73,7 +76,7 @@ public class EOarray extends EOObject {
 
     /**
      * Appends {@code obj} to the end of this array.
-     *
+     * <p>
      * This operation does not mutate the original array.
      * Instead, it produces a copy of this array and appends {@code obj} to the end of it.
      *
@@ -89,33 +92,33 @@ public class EOarray extends EOObject {
     /**
      * If {@code obj} is an EOarray appends item of {@code obj} to to the end of this array.
      * Otherwise appends {@code obj} to the end of this array.
-     *
+     * <p>
      * This operation does not mutate the original array.
      * Instead, it produces a copy of this array and appends {@code obj} to the end of it.
      *
      * @return a copy of this array with {@code obj} appended as its last element.
      */
     public EOarray EOappendAll(EOObject obj) {
-        try{
+        try {
             int array2Size = obj._getAttribute("EOlength")._getData().toInt().intValue();
-            if(array2Size > 0){
+            if (array2Size > 0) {
                 EOObject[] newArray;
                 newArray = new EOObject[_array.size() + array2Size];
                 System.arraycopy(_array.toArray(), 0, newArray, 0, _array.size());
-                for(int i = _array.size(); i < newArray.length; ++i){
-                    newArray[i] = obj._getAttribute("EOget", new EODataObject(i -_array.size()));
+                for (int i = _array.size(); i < newArray.length; ++i) {
+                    newArray[i] = obj._getAttribute("EOget", new EOint(i - _array.size()));
                 }
                 return new EOarray(newArray);
             }
             return this;
-        }catch (Exception e){
+        } catch (Exception e) {
             return EOappend(obj);
         }
     }
 
     /**
      * Transforms this array in accordance with {@code mapperObject}.
-     *
+     * <p>
      * This operation does not mutate the original array.
      * Instead, it produces a copy of this array where each element is transformed with {@code mapperObject}.
      *
@@ -138,7 +141,7 @@ public class EOarray extends EOObject {
     /**
      * Transforms this array in accordance with {@code mapperObject}.
      * This variant of mapping considers indices while transforming elements.
-     *
+     * <p>
      * This operation does not mutate the original array.
      * Instead, it produces a copy of this array where each element is transformed with {@code mapperObject}.
      *
@@ -163,18 +166,17 @@ public class EOarray extends EOObject {
      * Performs the operation of reduction of this array
      * (i.e., this method transforms this array into a single value in accordance with {@code reducerObject}).
      *
-     * @param accumulator an initial value of the accumulator.
+     * @param accumulator   an initial value of the accumulator.
      * @param reducerObject an EO object that must have a {@code reduce} attribute which must have two free attributes:
      *                      1. The first free attribute receives the current value of the accumulator.
      *                      2. The second free attribute receives the current element being operated over.
      *                      The order of the free attributes matters, and their names do not.
      *                      The {@code reduce} attribute must bind a reduction technique (function) to {@code @}.
-     *
      * @return the value of the accumulator after operating over the last element of this array (i.e., the result of reduction).
      */
     public EOObject EOreduce(EOObject accumulator, EOObject reducerObject) {
         EOObject out = accumulator;
-        for (EOObject eoObject:_array) {
+        for (EOObject eoObject : _array) {
             out = reducerObject._getAttribute("EOreduce", out, eoObject)._getDecoratedObject();
         }
         return out;
@@ -185,21 +187,20 @@ public class EOarray extends EOObject {
      * (i.e., this method transforms this array into a single value in accordance with {@code reducerObject}).
      * This variant of reduction considers indices while operating over elements.
      *
-     * @param accumulator an initial value of the accumulator.
+     * @param accumulator   an initial value of the accumulator.
      * @param reducerObject an EO object that must have a {@code reducei} attribute which must have three free attributes:
      *                      1. The first free attribute receives the current value of the accumulator.
      *                      2. The second free attribute receives the current element being operated over.
      *                      3. The third free attribute receives the index of the current element.
      *                      The order of the free attributes matters, and their names do not.
      *                      The {@code reducei} attribute must bind a reduction technique (function) to {@code @}.
-     *
      * @return the value of the accumulator after operating over the last element of this array (i.e., the result of reduction).
      */
     public EOObject EOreducei(EOObject accumulator, EOObject reducerObject) {
         EOObject out = accumulator;
-        int length =_array.size();
-        for(int i = 0; i < length;i++){
-            out = reducerObject._getAttribute("EOreducei", out,_array.get(i),new EODataObject(i))._getDecoratedObject();
+        int length = _array.size();
+        for (int i = 0; i < length; i++) {
+            out = reducerObject._getAttribute("EOreducei", out, _array.get(i), new EOint(i))._getDecoratedObject();
         }
         return out;
     }
@@ -210,13 +211,13 @@ public class EOarray extends EOObject {
      * evaluate) some routine against each element of an array when results are not needed.
      *
      * @param evaluatorObject an EO object that must have an {@code each} attribute which must have a free attribute
-     *                      that receives the current element being utilized by {@code evaluatorObject}.
-     *                      The name of the free attribute does not matter and may be chosen freely.
-     *                      The {@code each} attribute must bind an expression to be evaluated to {@code @}.
+     *                        that receives the current element being utilized by {@code evaluatorObject}.
+     *                        The name of the free attribute does not matter and may be chosen freely.
+     *                        The {@code each} attribute must bind an expression to be evaluated to {@code @}.
      * @return {@code true}.
      */
     public EObool EOeach(EOObject evaluatorObject) {
-        for (EOObject current:_array) {
+        for (EOObject current : _array) {
             evaluatorObject
                     ._getAttribute("EOeach", current)
                     ._getData();
@@ -230,32 +231,32 @@ public class EOarray extends EOObject {
      * Uniqueness of elements within pairs is not guaranteed (this method, however, guarantees that resulting pairs
      * themselves are unique regarding positions of included elements), so users of this method should consider
      * eliminating duplicates before retrieving pairs if unique elements within pairs are required (see examples below).
-     *
+     * <p>
      * Example #1:
-     *   array([1, 2, 3]).pairs -> array([tuple(1, 2), tuple(1, 3), tuple(2, 3)])
+     * array([1, 2, 3]).pairs -> array([tuple(1, 2), tuple(1, 3), tuple(2, 3)])
      * Example #2:
-     *   array([1, 2, 2]).pairs -> array([tuple(1, 2), tuple(1, 2), tuple(2, 2)])
+     * array([1, 2, 2]).pairs -> array([tuple(1, 2), tuple(1, 2), tuple(2, 2)])
      *
      * @return an {@code array} of {@code tuple} objects with pairs of the elements of this array.
      */
     public EOarray EOpairs() {
         return new EOarray(
                 Generator.combination(this._array.toArray(EOObject[]::new))
-                    .simple(2)
-                    .stream()
-                    .map(pair -> new EOtuple(pair.get(0), pair.get(1)))
-                    .toArray(EOObject[]::new)
+                        .simple(2)
+                        .stream()
+                        .map(pair -> new EOtuple(pair.get(0), pair.get(1)))
+                        .toArray(EOObject[]::new)
         );
     }
 
     /**
      * !!!For testing purposes only!!!
-     *
+     * <p>
      * Determines if this array is equal to the {@code o} object.
      * To do it, this method checks that the {@code o} object is an array
      * and it contains similar elements by delegating equality checks to
      * the elements themselves.
-     *
+     * <p>
      * This method can be called only in the testing environment
      * since all methods within the EO environment have the 'EO' prefix.
      */
@@ -269,28 +270,28 @@ public class EOarray extends EOObject {
 
     /**
      * !!!For testing purposes only!!!
-     *
+     * <p>
      * Produces a string that represents this array.
      * The resulting string has the following form:
      * array([elem1, elem2, elem3, elem4]),
      * where each elemN is converted to a string, too.
-     *
+     * <p>
      * Example:
      * Say, an array has three int elements: 1, 2, 3.
      * Then, the string representation of the array is:
      * array([int(1), int(2), int(3)]).
-     *
+     * <p>
      * This method can be called only in the testing environment
      * since all methods within the EO environment have the 'EO' prefix.
      */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("array([");
-        for (EOObject o:_array) {
+        for (EOObject o : _array) {
             sb.append(o.toString()).append(", ");
         }
         if (_array.size() > 0) {
-            sb.delete(sb.length()-2, sb.length());
+            sb.delete(sb.length() - 2, sb.length());
         }
         sb.append("])");
         return sb.toString();
