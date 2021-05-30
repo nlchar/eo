@@ -35,46 +35,6 @@ public class EOarray extends EOObject {
     }
 
     /**
-     * Determines if this array is empty.
-     *
-     * @return {@code true} if this array is empty, otherwise {@code false}.
-     */
-    public EObool EOisEmpty() {
-        return new EObool(_array.isEmpty());
-    }
-
-    /**
-     * Retrieves the length of this array.
-     *
-     * @return an {@code int} representing the length of this array.
-     */
-    public EOint EOlength() {
-        return new EOint(_array.size());
-    }
-
-    /**
-     * Retrieves the element at the position {@code i} of this array.
-     *
-     * @param i an index of the element to be fetched.
-     * @return an element at the position {@code i}.
-     * @throws IndexOutOfBoundsException if {@code i} is out of bounds of this array
-     *                                   (i.e., {@code array.length <= i < 0}).
-     */
-    public EOObject EOget(EOObject i) {
-        int position = i._getData().toInt().intValue();
-        if (position >= _array.size() || position < 0) {
-            throw new IndexOutOfBoundsException(
-                    String.format(
-                            "Cannot retrieve the element at the position %d of the following array: %s. The index is out of bounds.",
-                            position,
-                            this
-                    )
-            );
-        }
-        return _array.get(position);
-    }
-
-    /**
      * Appends {@code obj} to the end of this array.
      * <p>
      * This operation does not mutate the original array.
@@ -114,6 +74,64 @@ public class EOarray extends EOObject {
         } catch (Exception e) {
             return EOappend(obj);
         }
+    }
+
+    /**
+     * Evaluates {@code evaluatorObject} against each element of this array. Results of evaluations are not considered.
+     * This method always returns {@code true}. Basically, this method is useful to dataize (in other words, execute or
+     * evaluate) some routine against each element of an array when results are not needed.
+     *
+     * @param evaluatorObject an EO object that must have an {@code each} attribute which must have a free attribute
+     *                        that receives the current element being utilized by {@code evaluatorObject}.
+     *                        The name of the free attribute does not matter and may be chosen freely.
+     *                        The {@code each} attribute must bind an expression to be evaluated to {@code @}.
+     * @return {@code true}.
+     */
+    public EObool EOeach(EOObject evaluatorObject) {
+        for (EOObject current : _array) {
+            evaluatorObject._getAttribute("EOeach", current)._getData();
+        }
+        return new EObool(true);
+    }
+
+    /**
+     * Retrieves the element at the position {@code i} of this array.
+     *
+     * @param i an index of the element to be fetched.
+     * @return an element at the position {@code i}.
+     * @throws IndexOutOfBoundsException if {@code i} is out of bounds of this array
+     *                                   (i.e., {@code array.length <= i < 0}).
+     */
+    public EOObject EOget(EOObject i) {
+        int position = i._getData().toInt().intValue();
+        if (position >= _array.size() || position < 0) {
+            throw new IndexOutOfBoundsException(
+                    String.format(
+                            "Cannot retrieve the element at the position %d of the following array: %s. The index is out of bounds.",
+                            position,
+                            this
+                    )
+            );
+        }
+        return _array.get(position);
+    }
+
+    /**
+     * Determines if this array is empty.
+     *
+     * @return {@code true} if this array is empty, otherwise {@code false}.
+     */
+    public EObool EOisEmpty() {
+        return new EObool(_array.isEmpty());
+    }
+
+    /**
+     * Retrieves the length of this array.
+     *
+     * @return an {@code int} representing the length of this array.
+     */
+    public EOint EOlength() {
+        return new EOint(_array.size());
     }
 
     /**
@@ -163,6 +181,30 @@ public class EOarray extends EOObject {
     }
 
     /**
+     * Retrieves all pairs of the elements of this array.
+     * Resulting pairs are essentially 2-combinations with no repetitions (order is not taken into account).
+     * Uniqueness of elements within pairs is not guaranteed (this method, however, guarantees that resulting pairs
+     * themselves are unique regarding positions of included elements), so users of this method should consider
+     * eliminating duplicates before retrieving pairs if unique elements within pairs are required (see examples below).
+     * <p>
+     * Example #1:
+     * array([1, 2, 3]).pairs -> array([tuple(1, 2), tuple(1, 3), tuple(2, 3)])
+     * Example #2:
+     * array([1, 2, 2]).pairs -> array([tuple(1, 2), tuple(1, 2), tuple(2, 2)])
+     *
+     * @return an {@code array} of {@code tuple} objects with pairs of the elements of this array.
+     */
+    public EOarray EOpairs() {
+        return new EOarray(
+                Generator.combination(this._array.toArray(EOObject[]::new))
+                        .simple(2)
+                        .stream()
+                        .map(pair -> new EOtuple(pair.get(0), pair.get(1)))
+                        .toArray(EOObject[]::new)
+        );
+    }
+
+    /**
      * Performs the operation of reduction of this array
      * (i.e., this method transforms this array into a single value in accordance with {@code reducerObject}).
      *
@@ -206,48 +248,6 @@ public class EOarray extends EOObject {
     }
 
     /**
-     * Evaluates {@code evaluatorObject} against each element of this array. Results of evaluations are not considered.
-     * This method always returns {@code true}. Basically, this method is useful to dataize (in other words, execute or
-     * evaluate) some routine against each element of an array when results are not needed.
-     *
-     * @param evaluatorObject an EO object that must have an {@code each} attribute which must have a free attribute
-     *                        that receives the current element being utilized by {@code evaluatorObject}.
-     *                        The name of the free attribute does not matter and may be chosen freely.
-     *                        The {@code each} attribute must bind an expression to be evaluated to {@code @}.
-     * @return {@code true}.
-     */
-    public EObool EOeach(EOObject evaluatorObject) {
-        for (EOObject current : _array) {
-            evaluatorObject._getAttribute("EOeach", current)._getData();
-        }
-        return new EObool(true);
-    }
-
-    /**
-     * Retrieves all pairs of the elements of this array.
-     * Resulting pairs are essentially 2-combinations with no repetitions (order is not taken into account).
-     * Uniqueness of elements within pairs is not guaranteed (this method, however, guarantees that resulting pairs
-     * themselves are unique regarding positions of included elements), so users of this method should consider
-     * eliminating duplicates before retrieving pairs if unique elements within pairs are required (see examples below).
-     *
-     * Example #1:
-     * array([1, 2, 3]).pairs -> array([tuple(1, 2), tuple(1, 3), tuple(2, 3)])
-     * Example #2:
-     * array([1, 2, 2]).pairs -> array([tuple(1, 2), tuple(1, 2), tuple(2, 2)])
-     *
-     * @return an {@code array} of {@code tuple} objects with pairs of the elements of this array.
-     */
-    public EOarray EOpairs() {
-        return new EOarray(
-                Generator.combination(this._array.toArray(EOObject[]::new))
-                        .simple(2)
-                        .stream()
-                        .map(pair -> new EOtuple(pair.get(0), pair.get(1)))
-                        .toArray(EOObject[]::new)
-        );
-    }
-
-    /**
      * !!!For testing purposes only!!!
      * <p>
      * Determines if this array is equal to the {@code o} object.
@@ -264,6 +264,11 @@ public class EOarray extends EOObject {
         if (o == null || getClass() != o.getClass()) return false;
         EOarray eOarray = (EOarray) o;
         return _array.equals(eOarray._array);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_array);
     }
 
     /**
@@ -293,10 +298,5 @@ public class EOarray extends EOObject {
         }
         sb.append("])");
         return sb.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(_array);
     }
 }
