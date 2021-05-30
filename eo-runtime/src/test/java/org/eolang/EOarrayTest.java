@@ -7,24 +7,27 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
-
 /**
- * Test cases for {@link EOarray}
+ * Test cases for {@link EOarray}.
  */
 class EOarrayTest {
 
-    /***
-     * Test for {@code EOisEmpty}
-     * checks if an array is empty
+    /**
+     * Checks that {@code EOisEmpty} is able to assess that an empty array is empty.
      */
     @Test
-    void EOisEmpty() {
+    void EOisEmptyForEmptyArrays() {
         EOarray array = new EOarray();
-        MatcherAssert.assertThat(
-                array.EOisEmpty()._getData().toBoolean(),
-                Matchers.equalTo(true)
-        );
+        MatcherAssert.assertThat(array.EOisEmpty()._getData().toBoolean(), Matchers.is(true));
+    }
 
+    /**
+     * Checks that {@code EOisEmpty} is able to assess that a non-empty array is not empty.
+     */
+    @Test
+    void EOisEmptyForNonEmptyArrays() {
+        EOarray array = new EOarray(new EOint(1));
+        MatcherAssert.assertThat(array.EOisEmpty()._getData().toBoolean(), Matchers.is(false));
     }
 
     /***
@@ -173,120 +176,65 @@ class EOarrayTest {
     }
 
     /**
-     * Checks that {@code EOreduce} is able to reduce a non-empty int array to a sum of its elements.
+     * Checks that {@code EOmapi} is able to map a non-empty string array
+     * to an array of strings with indices concatenated to its elements.
      */
     @Test
-    void EOreduceSumsNonEmptyIntArray() {
+    void EOmapiTransformsNonEmptyStringArrayUsingIndices() {
         EOarray inputArray = new EOarray(
-                new EOint(1),
-                new EOint(3),
-                new EOint(5),
-                new EOint(7),
-                new EOint(9)
+                new EOstring("this"),
+                new EOstring("is"),
+                new EOstring("a"),
+                new EOstring("test"),
+                new EOstring("strings array")
         );
-        Long expectedResult = 25L;
-        EOObject reducerObject = new EOObject() {
-            public EOObject EOreduce(EOint subtotal, EOObject element) {
-                return new EOObject() {
-                    @Override
-                    protected EOObject _decoratee() {
-                        // adds the current element of the array to the subtotal
-                        return subtotal.EOadd(element);
-                    }
-                };
-            }
-        };
-        EOint initialAccumulator = new EOint(0);
-        EOObject reducedValue = inputArray.EOreduce(initialAccumulator, reducerObject);
-
-        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.equalTo(expectedResult));
-    }
-
-    /**
-     * Checks that {@code EOreduce} return the initial value when working with empty arrays.
-     */
-    @Test
-    void EOreduceWorksWithEmptyArrays() {
-        EOarray inputArray = new EOarray();
-        Long expectedResult = 0L;
-        EOObject reducerObject = new EOObject() {
-            public EOObject EOreduce(EOint subtotal, EOObject element) {
-                return new EOObject() {
-                    @Override
-                    protected EOObject _decoratee() {
-                        // adds the current element of the array to the subtotal
-                        return subtotal.EOadd(element);
-                    }
-                };
-            }
-        };
-        EOint initialAccumulator = new EOint(0);
-        EOObject reducedValue = inputArray.EOreduce(initialAccumulator, reducerObject);
-
-        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.equalTo(expectedResult));
-    }
-
-    /**
-     * Checks that {@code EOreducei} is able to evaluate a polynomial 5*x^4 - 7*x^2 + 20*x + 1, where x = 10.
-     * This problem is tested by reducing the array [1, 20, -7, 0, 5]
-     * representing the polynomial coefficients (from the lowest to the highest degree of x).
-     * Reduction considers the indices of the coefficients array [0, 1, 2, 3, 4],
-     * where each index represents a degree of the corresponding x.
-     * Reduction works as follows:
-     * 1. The initial value is 0.
-     * 2. For each element of the coefficients array,
-     *    multiply it to x raised into the power of the current index, where x = 10.
-     * Hence, the expected result is 49501.
-     */
-    @Test
-    void EOreduceiWorksWithNonEmptyIntArray() {
-        EOarray inputArray = new EOarray(
-                new EOint(1),
-                new EOint(20),
-                new EOint(-7),
-                new EOint(0),
-                new EOint(5)
+        EOarray expectedResultArray = new EOarray(
+                new EOstring("this0"),
+                new EOstring("is1"),
+                new EOstring("a2"),
+                new EOstring("test3"),
+                new EOstring("strings array4")
         );
-        Long expectedResult = 49501L;
-        EOint xValue = new EOint(10L);
-        EOObject reducerObject = new EOObject() {
-            public EOObject EOreducei(EOint subtotal, EOint element, EOint index) {
+        EOObject mapperObject = new EOObject() {
+            public EOObject EOmapi(EOstring element, EOint index) {
                 return new EOObject() {
                     @Override
                     protected EOObject _decoratee() {
-                        // + x*(a_i)^(c_i)
-                        return subtotal.EOadd(element.EOmul(xValue.EOpow(index)));
+                        return new EOsprintf(
+                                new EOstring("%s%d"),
+                                element,
+                                index
+                        );
                     }
                 };
             }
         };
-        EOint initialAccumulator = new EOint(0);
-        EOObject reducedValue = inputArray.EOreducei(initialAccumulator, reducerObject);
-
-        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.equalTo(expectedResult));
+        EOarray resultArray = inputArray.EOmapi(mapperObject);
+        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
     }
 
     /**
-     * Checks that {@code EOreducei} is able to work with empty arrays. The result must be equal to the initial value.
+     * Checks that {@code EOmapi} is able to map an empty array to another empty array.
      */
     @Test
-    void EOreduceiWorksWithEmptyIntArray() {
+    void EOmapiWorksWithEmptyArrays() {
         EOarray inputArray = new EOarray();
-        EOObject reducerObject = new EOObject() {
-            public EOObject EOreducei(EOint subtotal, EOint element, EOint index) {
+        EOObject mapperObject = new EOObject() {
+            public EOObject EOmapi(EOstring element, EOint index) {
                 return new EOObject() {
                     @Override
                     protected EOObject _decoratee() {
-                        // adds the current element of the array and the current index to the subtotal
-                        return subtotal.EOadd(element).EOadd(index);
+                        return new EOsprintf(
+                                new EOstring("%s%d"),
+                                element,
+                                index
+                        );
                     }
                 };
             }
         };
-        EOint initialAccumulator = new EOint(177);
-        EOObject reducedValue = inputArray.EOreducei(initialAccumulator, reducerObject);
-
-        MatcherAssert.assertThat(reducedValue, Matchers.equalTo(initialAccumulator));
+        EOarray resultArray = inputArray.EOmapi(mapperObject);
+        MatcherAssert.assertThat(resultArray.EOisEmpty()._getData().toBoolean(), Matchers.is(true));
     }
 
     /**
@@ -339,69 +287,124 @@ class EOarrayTest {
             }
         };
         EOarray resultArray = inputArray.EOmap(mapperObject);
-        MatcherAssert.assertThat(resultArray.EOisEmpty()._getData().toBoolean(), Matchers.equalTo(true));
+        MatcherAssert.assertThat(resultArray.EOisEmpty()._getData().toBoolean(), Matchers.is(true));
     }
 
     /**
-     * Checks that {@code EOmapi} is able to map a non-empty string array
-     * to an array of strings with indices concatenated to its elements.
+     * Checks that {@code EOreducei} is able to work with empty arrays. The result must be equal to the initial value.
      */
     @Test
-    void EOmapiTransformsNonEmptyStringArrayUsingIndices() {
-        EOarray inputArray = new EOarray(
-                new EOstring("this"),
-                new EOstring("is"),
-                new EOstring("a"),
-                new EOstring("test"),
-                new EOstring("strings array")
-        );
-        EOarray expectedResultArray = new EOarray(
-                new EOstring("this0"),
-                new EOstring("is1"),
-                new EOstring("a2"),
-                new EOstring("test3"),
-                new EOstring("strings array4")
-        );
-        EOObject mapperObject = new EOObject() {
-            public EOObject EOmapi(EOstring element, EOint index) {
-                return new EOObject() {
-                    @Override
-                    protected EOObject _decoratee() {
-                        return new EOsprintf(
-                                    new EOstring("%s%d"),
-                                    element,
-                                    index
-                        );
-                    }
-                };
-            }
-        };
-        EOarray resultArray = inputArray.EOmapi(mapperObject);
-        MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
-    }
-
-    /**
-     * Checks that {@code EOmapi} is able to map an empty array to another empty array.
-     */
-    @Test
-    void EOmapiWorksWithEmptyArrays() {
+    void EOreduceiWorksWithEmptyIntArray() {
         EOarray inputArray = new EOarray();
-        EOObject mapperObject = new EOObject() {
-            public EOObject EOmapi(EOstring element, EOint index) {
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreducei(EOint subtotal, EOint element, EOint index) {
                 return new EOObject() {
                     @Override
                     protected EOObject _decoratee() {
-                        return new EOsprintf(
-                                new EOstring("%s%d"),
-                                element,
-                                index
-                        );
+                        // adds the current element of the array and the current index to the subtotal
+                        return subtotal.EOadd(element).EOadd(index);
                     }
                 };
             }
         };
-        EOarray resultArray = inputArray.EOmapi(mapperObject);
-        MatcherAssert.assertThat(resultArray.EOisEmpty()._getData().toBoolean(), Matchers.equalTo(true));
+        EOint initialAccumulator = new EOint(177);
+        EOObject reducedValue = inputArray.EOreducei(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue, Matchers.is(initialAccumulator));
+    }
+
+    /**
+     * Checks that {@code EOreducei} is able to evaluate a polynomial 5*x^4 - 7*x^2 + 20*x + 1, where x = 10.
+     * This problem is tested by reducing the array [1, 20, -7, 0, 5]
+     * representing the polynomial coefficients (from the lowest to the highest degree of x).
+     * Reduction considers the indices of the coefficients array [0, 1, 2, 3, 4],
+     * where each index represents a degree of the corresponding x.
+     * Reduction works as follows:
+     * 1. The initial value is 0.
+     * 2. For each element of the coefficients array,
+     *    multiply it to x raised into the power of the current index, where x = 10.
+     * Hence, the expected result is 49501.
+     */
+    @Test
+    void EOreduceiWorksWithNonEmptyIntArray() {
+        EOarray inputArray = new EOarray(
+                new EOint(1),
+                new EOint(20),
+                new EOint(-7),
+                new EOint(0),
+                new EOint(5)
+        );
+        Long expectedResult = 49501L;
+        EOint xValue = new EOint(10L);
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreducei(EOint subtotal, EOint element, EOint index) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        // + x*(a_i)^(c_i)
+                        return subtotal.EOadd(element.EOmul(xValue.EOpow(index)));
+                    }
+                };
+            }
+        };
+        EOint initialAccumulator = new EOint(0);
+        EOObject reducedValue = inputArray.EOreducei(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.is(expectedResult));
+    }
+
+    /**
+     * Checks that {@code EOreduce} is able to reduce a non-empty int array to a sum of its elements.
+     */
+    @Test
+    void EOreduceSumsNonEmptyIntArray() {
+        EOarray inputArray = new EOarray(
+                new EOint(1),
+                new EOint(3),
+                new EOint(5),
+                new EOint(7),
+                new EOint(9)
+        );
+        Long expectedResult = 25L;
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreduce(EOint subtotal, EOObject element) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        // adds the current element of the array to the subtotal
+                        return subtotal.EOadd(element);
+                    }
+                };
+            }
+        };
+        EOint initialAccumulator = new EOint(0);
+        EOObject reducedValue = inputArray.EOreduce(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.is(expectedResult));
+    }
+
+    /**
+     * Checks that {@code EOreduce} return the initial value when working with empty arrays.
+     */
+    @Test
+    void EOreduceWorksWithEmptyArrays() {
+        EOarray inputArray = new EOarray();
+        Long expectedResult = 0L;
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreduce(EOint subtotal, EOObject element) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        // adds the current element of the array to the subtotal
+                        return subtotal.EOadd(element);
+                    }
+                };
+            }
+        };
+        EOint initialAccumulator = new EOint(0);
+        EOObject reducedValue = inputArray.EOreduce(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.is(expectedResult));
     }
 
 }
