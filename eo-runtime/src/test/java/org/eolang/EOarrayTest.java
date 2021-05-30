@@ -227,10 +227,10 @@ class EOarrayTest {
     }
 
     /**
-     * Checks that {@code EOmap} is able to map an int array to an array of squares of its elements.
+     * Checks that {@code EOmap} is able to map a non-empty int array to an array of squares of its elements.
      */
     @Test
-    void EOmapTransformsIntArrayToItsSquares() {
+    void EOmapTransformsNonEmptyIntArrayToItsSquares() {
         EOarray inputArray = new EOarray(
                 new EOint(1),
                 new EOint(3),
@@ -260,11 +260,31 @@ class EOarrayTest {
     }
 
     /**
-     * Checks that {@code EOmapi} is able to map a string array
+     * Checks that {@code EOmap} is able to map an empty array to another empty array.
+     */
+    @Test
+    void EOmapWorksWithEmptyArrays() {
+        EOarray inputArray = new EOarray();
+        EOObject mapperObject = new EOObject() {
+            public EOObject EOmap(EOint element) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        return element.EOpow(new EOint(2));
+                    }
+                };
+            }
+        };
+        EOarray resultArray = inputArray.EOmap(mapperObject);
+        MatcherAssert.assertThat(resultArray.EOisEmpty()._getData().toBoolean(), Matchers.equalTo(true));
+    }
+
+    /**
+     * Checks that {@code EOmapi} is able to map a non-empty string array
      * to an array of strings with indices concatenated to its elements.
      */
     @Test
-    void EOmapiTransformsStringArrayUsingIndices() {
+    void EOmapiTransformsNonEmptyStringArrayUsingIndices() {
         EOarray inputArray = new EOarray(
                 new EOstring("this"),
                 new EOstring("is"),
@@ -295,6 +315,30 @@ class EOarrayTest {
         };
         EOarray resultArray = inputArray.EOmapi(mapperObject);
         MatcherAssert.assertThat(resultArray, Matchers.is(expectedResultArray));
+    }
+
+    /**
+     * Checks that {@code EOmapi} is able to map an empty array to another empty array.
+     */
+    @Test
+    void EOmapiWorksWithEmptyArrays() {
+        EOarray inputArray = new EOarray();
+        EOObject mapperObject = new EOObject() {
+            public EOObject EOmapi(EOstring element, EOint index) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        return new EOsprintf(
+                                new EOstring("%s%d"),
+                                element,
+                                index
+                        );
+                    }
+                };
+            }
+        };
+        EOarray resultArray = inputArray.EOmapi(mapperObject);
+        MatcherAssert.assertThat(resultArray.EOisEmpty()._getData().toBoolean(), Matchers.equalTo(true));
     }
 
 }
