@@ -173,10 +173,10 @@ class EOarrayTest {
     }
 
     /**
-     * Checks that {@code EOreduce} is able to reduce an int array to a sum of its elements.
+     * Checks that {@code EOreduce} is able to reduce a non-empty int array to a sum of its elements.
      */
     @Test
-    void EOreduceSumsIntArray() {
+    void EOreduceSumsNonEmptyIntArray() {
         EOarray inputArray = new EOarray(
                 new EOint(1),
                 new EOint(3),
@@ -185,6 +185,30 @@ class EOarrayTest {
                 new EOint(9)
         );
         Long expectedResult = 25L;
+        EOObject reducerObject = new EOObject() {
+            public EOObject EOreduce(EOint subtotal, EOObject element) {
+                return new EOObject() {
+                    @Override
+                    protected EOObject _decoratee() {
+                        // adds the current element of the array to the subtotal
+                        return subtotal.EOadd(element);
+                    }
+                };
+            }
+        };
+        EOint initialAccumulator = new EOint(0);
+        EOObject reducedValue = inputArray.EOreduce(initialAccumulator, reducerObject);
+
+        MatcherAssert.assertThat(reducedValue._getData().toInt(), Matchers.equalTo(expectedResult));
+    }
+
+    /**
+     * Checks that {@code EOreduce} return the initial value when working with empty arrays.
+     */
+    @Test
+    void EOreduceWorksWithEmptyArrays() {
+        EOarray inputArray = new EOarray();
+        Long expectedResult = 0L;
         EOObject reducerObject = new EOObject() {
             public EOObject EOreduce(EOint subtotal, EOObject element) {
                 return new EOObject() {
